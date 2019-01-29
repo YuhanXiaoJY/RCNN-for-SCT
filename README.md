@@ -61,7 +61,7 @@ Use RCNN to solve story cloze test
 
 ![](http://ww1.sinaimg.cn/mw690/0071tMo1ly1fyfgvryk3ej30t10ca0v2.jpg)
 
-- 简略地说，就是在双向RNN（在这个项目中，将原始RNN替换为双向LSTM）的输出结果上再套一层max-pooling layer。从CNN的角度来看，即卷积层为BiLSTM，然后经过max-pooling layer，最后达到输出层，得出对(story, answer) pair的score。由于有两个备选句子，我们得出(story, ans1)和(story, ans2)的score，取大者为正确答案，输出label。  
+- 简略地说，就是在双向RNN（在这个项目中，将原始RNN替换为双向LSTM）的输出结果上再套一层max-pooling layer。从CNN的角度来看，即卷积层为BiLSTM，然后经过max-pooling layer，最后达到输出层，得出对(story, answer) pair的score。由于有两个备选句子，所以要分别得出(story, ans1)和(story, ans2)的score，取大者为正确答案，输出label。  
 
 - 对于BiLSTM而言，训练时的输入是三元组（story, true answer, false answer）*batch size。这里是将验证集的一部分作为训练集的。之所以这样做，是因为我在阅读论文时发现story cloze test的训练集是有问题的，在很多模型上甚至只会起到负面作用，每一条数据只有正确答案，没有错误答案，机器无法明确自己的学习目的。在Glove + fullstory版本中， 输入的story是四个语境句子的句向量的叠加平均；在Glove + last sentence版本中，输入的story是最后一个语境句子的句向量；在skip-thoughts + last sentence版本中，输入的story是最后一个语境句子的句向量。
 
