@@ -7,7 +7,7 @@ Use RCNN to solve story cloze test
 - Glove + last sentence：输入的四个句子中只考虑最后一个句子。  
 - **skip-thoughts + last sentence**：使用skip-thoughts vector，输入的四个句子中只考虑最后一个句子  
 
-以skip-thoughts + last sentence为最终版本，上交代码中包含所有版本的代码。  
+以skip-thoughts + last sentence为最终版本。  
 
 
 
@@ -22,9 +22,9 @@ Use RCNN to solve story cloze test
 
 ##### 1.2 数据说明  
 
-- 项目所给数据集。    
+- rawdata文件夹中的test,train和val    
 
-- 额外使用的数据（词向量）：  
+- 词向量：  
 
   - Glove (6B tokens, 400K vocab, uncased, 50d, 100d, 200d, & 300d vectors, 822 MB)```(参考资料[2])```
   - 在RCNN的最终版本中使用了skip-thoughts vector```（参考资料[3]）```。skip-thoughts vector需要结合模型自行生成。  
@@ -33,7 +33,7 @@ Use RCNN to solve story cloze test
 
 ##### 1.3 代码文件说明  
 
-共10个python文件：
+共9个python文件：
 
 - preprocess.py（Glove的两个版本使用）：对项目给的数据集（train.csv, val.csv, test.csv）进行数据预处理。加载词向量文件（Glove），建立词典，建立原始数据对词典的索引。    
 - data_util.py：集成了与数据处理相关的函数：
@@ -49,7 +49,7 @@ Use RCNN to solve story cloze test
 - RCNN_train.py（用于Glove + last sentence）：进行训练和准确率评估，评估结果写入data/result文件夹中。  
 - RCNN_train_skipthoughts.py（用于skip-thoughts + last sentence）：进行训练和准确率评估，评估结果写入data/result文件夹中。  
 - get_embd.py：用于获取skip-thoughts vector。
-- module_test.py：用于程序编写过程中的debug。    
+    
 
  
 
@@ -61,9 +61,9 @@ Use RCNN to solve story cloze test
 
 ![](http://ww1.sinaimg.cn/mw690/0071tMo1ly1fyfgvryk3ej30t10ca0v2.jpg)
 
-- 简略地说，就是在双向RNN（我们的项目中，将原始RNN替换为双向LSTM）的输出结果上再套一层max-pooling layer。从CNN的角度来看，即卷积层为BiLSTM，然后经过max-pooling layer，最后达到输出层，得出对(story, answer) pair的score。由于有两个备选句子，我们得出(story, ans1)和(story, ans2)的score，取大者为正确答案，输出label。  
+- 简略地说，就是在双向RNN（在这个项目中，将原始RNN替换为双向LSTM）的输出结果上再套一层max-pooling layer。从CNN的角度来看，即卷积层为BiLSTM，然后经过max-pooling layer，最后达到输出层，得出对(story, answer) pair的score。由于有两个备选句子，我们得出(story, ans1)和(story, ans2)的score，取大者为正确答案，输出label。  
 
-- 对于BiLSTM而言，训练时的输入是三元组（story, true answer, false answer）*batch size。这里是将验证集的一部分作为训练集的。之所以这样做，是因为我们在阅读论文时发现story cloze test的训练集是有问题的，在很多模型上甚至只会起到负面作用，每一条数据只有正确答案，没有错误答案，机器无法明确自己的学习目的。在Glove + fullstory版本中， 输入的story是四个语境句子的句向量的叠加平均；在Glove + last sentence版本中，输入的story是最后一个语境句子的句向量；在skip-thoughts + last sentence版本中，输入的story是最后一个语境句子的句向量。
+- 对于BiLSTM而言，训练时的输入是三元组（story, true answer, false answer）*batch size。这里是将验证集的一部分作为训练集的。之所以这样做，是因为我在阅读论文时发现story cloze test的训练集是有问题的，在很多模型上甚至只会起到负面作用，每一条数据只有正确答案，没有错误答案，机器无法明确自己的学习目的。在Glove + fullstory版本中， 输入的story是四个语境句子的句向量的叠加平均；在Glove + last sentence版本中，输入的story是最后一个语境句子的句向量；在skip-thoughts + last sentence版本中，输入的story是最后一个语境句子的句向量。
 
   max-pooling layer的输入是BiLSTM的输出，激活函数为tanh。  
 
@@ -71,9 +71,9 @@ Use RCNN to solve story cloze test
 
 
 
-在以上网络架构的基础上，我们使用max-margin loss来计算损失：
+在以上网络架构的基础上，使用max-margin loss来计算损失：
 
-- 经过max-pooling layer之后，我们得到了story, true answer, false answer分别对应的结果（记为s, t, f），这三个结果都是向量形式。   
+- 经过max-pooling layer之后，得到了story, true answer, false answer分别对应的结果（记为s, t, f），这三个结果都是向量形式。   
 
 - 计算s和t的cosine similarity（记为$$cos_t$$）以及s和f的cosine similarity（记为$$cos_f$$）：  
   $$
